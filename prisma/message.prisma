@@ -10,11 +10,11 @@ model Message {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
-  sender         User          @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
-  conversation   Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  replyTo        Message?      @relation("Replies", fields: [replyToId], references: [id])
-  replies        Message[]     @relation("Replies")
-  reactions      Reaction[]
+  sender       User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  replyTo      Message?     @relation("Replies", fields: [replyToId], references: [id])
+  replies      Message[]    @relation("Replies")
+  reactions    Reaction[]
 }
 
 enum MessageStatus {
@@ -30,8 +30,8 @@ model Reaction {
   messageId String
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
   @@unique([userId, messageId, emoji])
 }

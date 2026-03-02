@@ -1,15 +1,15 @@
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  avatar        String?
-  password      String?
-  statusMessage String?
-  isOnline      Boolean   @default(false)
-  lastSeen      DateTime?
-  emailVerified Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                         String    @id @default(cuid())
+  email                      String    @unique
+  name                       String?
+  avatar                     String?
+  password                   String?
+  statusMessage              String?
+  isOnline                   Boolean   @default(false)
+  lastSeen                   DateTime?
+  emailVerified              Boolean   @default(false)
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
 
   sentMessages  Message[]           @relation("SentMessages")
   participants  Participant[]
@@ -26,7 +26,7 @@ model VerificationToken {
   expiresAt DateTime
   createdAt DateTime  @default(now())
 
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum TokenType {
