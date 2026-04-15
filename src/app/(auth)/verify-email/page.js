@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const STATUS = {
   LOADING: "loading",
@@ -13,7 +14,11 @@ const STATUS = {
   ERROR: "error",
 };
 
+const TIME = 1000 * 60 * 60;
+
 export default function VerifyEmailPage() {
+  const [enableResend, setEnableResend] = useState(false);
+  const timerRef = useRef(null);
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
@@ -33,13 +38,13 @@ export default function VerifyEmailPage() {
         setMessage(
           res.data.message || "Your email has been verified successfully!",
         );
-        //check if token exists in cookies and user data exists.
-        // Redirect to login after 3 seconds
-        setTimeout(() => {
-          router.replace("/");
-        }, 1000);
         channel.postMessage({ type: "EMAIL_VERIFICATION_SUCCESS" });
+
+        // disable the resend button
+        setEnableResend(false);
       } catch (error) {
+        clearTimeout(timerRef.current);
+        setEnableResend(true);
         setStatus(STATUS.ERROR);
         setMessage(
           error.response?.data?.error ||
@@ -52,8 +57,25 @@ export default function VerifyEmailPage() {
 
     return () => {
       channel.close();
+      clearTimeout(timerRef.current);
     };
   }, [token, router]);
+
+  const handleTabClose = () => {
+    window.opener = null;
+    window.open("", "_self");
+    window.close();
+  };
+
+  const handleResend = async () => {
+    try {
+      const res = await axios.post("/api/auth/verify-email/resend", { token });
+      toast.success("Email resent successfully!");
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to resend email. Please try again later.");
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/40 px-4">
@@ -135,13 +157,16 @@ export default function VerifyEmailPage() {
                 </h2>
                 <p className="text-muted-foreground text-sm">{message}</p>
                 <div className="flex flex-col w-full gap-2 mt-2">
-                  <Button variant="outline" asChild>
-                    <Link href="/resend-verification">
+                  {enableResend && (
+                    <Button variant="outline" onClick={handleResend}>
                       Resend Verification Email
-                    </Link>
-                  </Button>
+                    </Button>
+                  )}
                   <Button asChild>
                     <Link href="/login">Back to Login</Link>
+                  </Button>
+                  <Button variant="destructive" onClick={handleTabClose}>
+                    Close tab
                   </Button>
                 </div>
               </>
