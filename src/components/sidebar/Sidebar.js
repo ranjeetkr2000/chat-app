@@ -14,16 +14,26 @@ export default function Sidebar({
 }) {
   const [mode, setMode] = useState("default");
 
+  const onActionClick = () => {
+    if (mode === "default") setMode("new");
+    else if (mode === "new") setMode("default");
+  }
+
+  const onSearchChange = (e) => {
+    
+  }
+
   return (
     <div className="w-full max-w-sm border-r flex flex-col">
       <SidebarHeader />
       <ConversationsSearchBar
         search={search}
-        setSearch={(value) => {
+        onSearchChange={(value) => {
           setSearch(value);
           setMode(value ? "search" : "default");
         }}
-        onNewChat={() => setMode("new")}
+        onActionClick={onActionClick}
+        mode={mode}
       />
 
       {/* 🔥 Core Logic */}

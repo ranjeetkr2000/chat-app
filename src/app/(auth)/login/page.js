@@ -56,7 +56,6 @@ const LoginPage = () => {
   const onSubmit = async (data) => {
     try {
       const res = await axios.post(`/api/auth/login`, data);
-      console.log({ res });
       setRes(res.data);
       toast.success(`Login Success!`);
       router.replace("/");

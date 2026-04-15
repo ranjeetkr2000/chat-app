@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { cookies } from "next/headers";
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = "7d";
 
@@ -34,7 +35,7 @@ export function verifyToken(token) {
  * @returns {string|null} token string or null if not found
  */
 export function extractToken(request) {
-  const authHeader = request.headers.get("authorization");
+  const authHeader = request.cookies.get("authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return null;
   }
@@ -46,12 +47,17 @@ export function extractToken(request) {
  * @param {Request} request - Next.js request object
  * @returns {{ id: string, email: string } | null} decoded user or null
  */
-export function getAuthUser(request) {
+export async function getAuthUser() {
   try {
-    const token = extractToken(request);
+    const cookieStore = await cookies(); // ✅ MUST await
+    const token = cookieStore.get("token")?.value;
+
+    console.log({ token });
+
     if (!token) return null;
+
     return verifyToken(token);
-  } catch {
+  } catch (err) {
     return null;
   }
 }

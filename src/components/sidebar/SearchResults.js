@@ -1,10 +1,40 @@
+import axios from "axios";
 import ConversationItem from "./ConversationItem";
 import UserItem from "./UserItem";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useDebounce } from "react-use";
 
 export default function SearchResults({ query }) {
-  const { data, isLoading } = useSearch(query);
 
-  if (isLoading) {
+  const [data, setData] = useState({
+    conversations: [],
+    users: [],
+  });
+  const [loading, setLoading] = useState(false);
+
+  const fetchResults = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`/api/search/searchConversations?query=${query}`);
+      const { groups, chats, users } = res.data.data;
+      const conversations = [...groups, ...chats];
+      setData({
+        conversations,
+        users,
+      });
+    }
+    catch (err) {
+      toast.error(err.response?.data?.message ?? err.message);
+    }
+    finally {
+      setLoading(false);
+    }
+  }
+
+  const [isReady, cancel] = useDebounce(fetchResults, 500, [query]);
+
+  if (loading) {
     return (
       <div className="p-4 text-sm text-muted-foreground">
         Searching...
