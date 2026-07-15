@@ -21,9 +21,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
-import axios from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import api from "@/lib/axios";
 
 // ──────────────────────────────────────────────────────────────────────────
 const LoginPage = () => {
@@ -55,7 +55,7 @@ const LoginPage = () => {
 
   const onSubmit = async (data) => {
     try {
-      const res = await axios.post(`/api/auth/login`, data);
+      const res = await api.post("auth/login", data);
       setRes(res.data);
       toast.success(`Login Success!`);
       router.replace("/");

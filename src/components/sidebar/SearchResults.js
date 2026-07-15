@@ -1,12 +1,13 @@
-import axios from "axios";
 import ConversationItem from "./ConversationItem";
-import UserItem from "./UserItem";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useDebounce } from "react-use";
 
-export default function SearchResults({ query }) {
-
+export default function SearchResults({
+  query,
+  selectedChat,
+  setSelectedChat,
+}) {
   const [data, setData] = useState({
     conversations: [],
     users: [],
@@ -16,29 +17,42 @@ export default function SearchResults({ query }) {
   const fetchResults = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`/api/search/searchConversations?query=${query}`);
+      const res = await api.get(
+        `search/searchConversations?query=${query}`,
+      );
       const { groups, chats, users } = res.data.data;
       const conversations = [...groups, ...chats];
+      const groupsFormatted = groups.map((grp) => ({
+        id: grp.id,
+        name: grp.groupName,
+        avatar: grp.groupAvatar,
+        
+      }));
       setData({
         conversations,
         users,
       });
-    }
-    catch (err) {
+    } catch (err) {
       toast.error(err.response?.data?.message ?? err.message);
-    }
-    finally {
+    } finally {
       setLoading(false);
     }
-  }
+  };
 
   const [isReady, cancel] = useDebounce(fetchResults, 500, [query]);
 
+  //cleanup to remove the 
+  useEffect(() => {
+    return () => {
+      if (selectedChat?.tempChatId) {
+        setSelectedChat(null);
+      }
+    }
+  }, [selectedChat, setSelectedChat]);
+
   if (loading) {
     return (
-      <div className="p-4 text-sm text-muted-foreground">
-        Searching...
-      </div>
+      <div className="p-4 text-sm text-muted-foreground">Searching...</div>
     );
   }
 
@@ -53,7 +67,12 @@ export default function SearchResults({ query }) {
             Conversations
           </p>
           {data.conversations.map((chat) => (
-            <ConversationItem key={chat.id} chat={chat} />
+            <ConversationItem
+              key={chat.id}
+              chat={chat}
+              selectedChat={selectedChat}
+              setSelectedChat={setSelectedChat}
+            />
           ))}
         </>
       )}
@@ -61,11 +80,18 @@ export default function SearchResults({ query }) {
       {/* Users */}
       {data.users.length > 0 && (
         <>
-          <p className="px-4 py-2 text-xs text-muted-foreground">
-            Users
-          </p>
+          <p className="px-4 py-2 text-xs text-muted-foreground">Users</p>
           {data.users.map((user) => (
-            <UserItem key={user.id} user={user} />
+            <ConversationItem
+              key={user.id}
+              chat={user}
+              isSelected={selectedChat?.userId === user.id}
+              onClick={() => setSelectedChat({
+                ...user,
+                id: null,
+                userId: user.id,
+              })}
+            />
           ))}
         </>
       )}

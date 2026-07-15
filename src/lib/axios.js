@@ -1,0 +1,8 @@
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  withCredentials: true, // Automatically sends cookies with every request
+});
+
+export default api;

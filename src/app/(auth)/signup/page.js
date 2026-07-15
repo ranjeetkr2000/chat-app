@@ -26,6 +26,7 @@ import Link from "next/link";
 import axios from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import api from "@/lib/axios";
 
 // ── Zod Validation Schema ──────────────────────────────────────────────────
 const signupSchema = z.object({
@@ -74,7 +75,7 @@ const SignupPage = () => {
 
   const onSubmit = async (data) => {
     try {
-      const res = await axios.post(`/api/auth/register`, data);
+      const res = await api.post(`auth/register`, data);
       setRes(res.data);
       toast.success(`Verification email has been sent to ${data.email}`);
     } catch (error) {

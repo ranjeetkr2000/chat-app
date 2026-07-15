@@ -43,20 +43,30 @@ export default function ConversationItem({ chat, isSelected, onClick }) {
       <div className="flex-1 min-w-0">
         <div className="flex justify-between">
           <span className="font-medium text-sm truncate">{chat.name}</span>
-          <span className="text-xs text-muted-foreground">{chat.time}</span>
-        </div>
-
-        <div className="flex justify-between mt-0.5">
-          <span className="text-xs text-muted-foreground truncate">
-            {chat.lastMessage}
-          </span>
-
-          {chat.unread > 0 && (
-            <Badge className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px] bg-green-500">
-              {chat.unread}
-            </Badge>
+          {chat.id && (
+            <span className="text-xs text-muted-foreground">{chat.time}</span>
           )}
         </div>
+
+        {chat.id ? (
+          <div className="flex justify-between mt-0.5">
+            <span className="text-xs text-muted-foreground truncate">
+              {chat.lastMessage}
+            </span>
+
+            {chat.unread > 0 && (
+              <Badge className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px] bg-green-500">
+                {chat.unread}
+              </Badge>
+            )}
+          </div>
+        ) : (
+          <div className="flex justify-between mt-0.5">
+            <span className="text-xs text-muted-foreground truncate">
+              Start chat
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

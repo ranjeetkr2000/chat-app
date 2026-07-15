@@ -14,39 +14,28 @@ export default function Sidebar({
 }) {
   const [mode, setMode] = useState("default");
 
-  const onActionClick = () => {
-    if (mode === "default") setMode("new");
-    else if (mode === "new") setMode("default");
-  }
-
-  const onSearchChange = (e) => {
-    
-  }
+  const onSearchChange = (value) => {
+    setSearch(value);
+    setMode(value ? "search" : "default");
+  };
 
   return (
     <div className="w-full max-w-sm border-r flex flex-col">
       <SidebarHeader />
       <ConversationsSearchBar
         search={search}
-        onSearchChange={(value) => {
-          setSearch(value);
-          setMode(value ? "search" : "default");
-        }}
-        onActionClick={onActionClick}
+        onSearchChange={onSearchChange}
         mode={mode}
       />
 
-      {/* 🔥 Core Logic */}
-      {mode === "new" && (
-        <UserPicker
-          onBack={() => setMode("default")}
-          onSelectUser={(user) => {
-            // later: createConversation(user)
-          }}
+      {/* We can merge these components into one- SearchResults and ConversationList */}
+      {mode === "search" && (
+        <SearchResults
+          query={search}
+          selectedChat={selectedChat}
+          setSelectedChat={setSelectedChat}
         />
       )}
-
-      {mode === "search" && <SearchResults query={search} />}
 
       {mode === "default" && (
         <ConversationList

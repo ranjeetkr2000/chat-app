@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import axios from "axios";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import api from "@/lib/axios";
 
 const STATUS = {
   LOADING: "loading",
@@ -30,10 +30,11 @@ export default function VerifyEmailPage() {
 
   useEffect(() => {
     if (!token) return;
+    const timer = timerRef.current;
     const channel = new BroadcastChannel("EMAIL_VERIFICATION");
     const verifyEmail = async () => {
       try {
-        const res = await axios.get(`/api/auth/verify-email?token=${token}`);
+        const res = await api.get(`auth/verify-email?token=${token}`);
         setStatus(STATUS.SUCCESS);
         setMessage(
           res.data.message || "Your email has been verified successfully!",
@@ -57,7 +58,7 @@ export default function VerifyEmailPage() {
 
     return () => {
       channel.close();
-      clearTimeout(timerRef.current);
+      clearTimeout(timer);
     };
   }, [token, router]);
 
@@ -69,7 +70,7 @@ export default function VerifyEmailPage() {
 
   const handleResend = async () => {
     try {
-      const res = await axios.post("/api/auth/verify-email/resend", { token });
+      const res = await api.post("auth/verify-email/resend", { token });
       toast.success("Email resent successfully!");
     } catch (error) {
       console.log(error);

@@ -4,6 +4,8 @@ export const conversationsSlice = createSlice({
   name: 'todos',
   initialState: {
     conversations: [],
+    currentConversation: null,
+    
   },
   reducers: {
   },
