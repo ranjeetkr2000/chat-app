@@ -1,10 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit'
-import userReducer from '../redux/slices/user';
+import authReducer from '../redux/slices/auth';
+import messageReducer from '../redux/slices/message';
 
 export const makeStore = () => {
   return configureStore({
     reducer: {
-      user: userReducer,
+      auth: authReducer,
+      message: messageReducer,
     },
   })
 }

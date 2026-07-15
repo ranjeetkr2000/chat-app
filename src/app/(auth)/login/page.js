@@ -24,7 +24,8 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import api from "@/lib/axios";
-
+import { useDispatch } from "react-redux";
+import { setUser } from "@/redux/slices/auth";
 // ──────────────────────────────────────────────────────────────────────────
 const LoginPage = () => {
   const router = useRouter();
@@ -37,7 +38,7 @@ const LoginPage = () => {
 
   const { isSubmitting } = form.formState;
 
-  const [res, setRes] = useState(null);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const channel = new BroadcastChannel("EMAIL_VERIFICATION");
@@ -56,7 +57,7 @@ const LoginPage = () => {
   const onSubmit = async (data) => {
     try {
       const res = await api.post("auth/login", data);
-      setRes(res.data);
+      dispatch(setUser(res?.data?.data?.user));
       toast.success(`Login Success!`);
       router.replace("/");
     } catch (error) {

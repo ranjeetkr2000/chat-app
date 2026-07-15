@@ -15,7 +15,6 @@ export default function Home() {
     const fetchConversations = async () => {
       try {
         const data = await api.get("conversations");
-        console.log({data})
         const conv = data?.data;
         const chats = conv?.data?.map((chat) => {
           const name = chat.isGroup ? chat.groupName : chat.otherUser?.name;

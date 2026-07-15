@@ -1,19 +1,33 @@
-import { useEffect, useEffectEvent, useState } from "react";
+import { useEffect, useEffectEvent } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
+
+import api from "@/lib/axios";
+import { prependMessages, setMessages } from "@/redux/slices/message";
+
 import ChatHeader from "./ChatHeader";
 import EmptyState from "./EmptyState";
 import MessageArea from "./MessageArea";
 import MessageInput from "./MessageInput";
-import { toast } from "sonner";
-import api from "@/lib/axios";
 
 export default function ChatArea({ selectedChat }) {
-  const [messages, setMessages] = useState([]);
+  const dispatch = useDispatch();
+
+  const messages = useSelector(
+    (state) => state.message.byConversation[selectedChat?.id],
+  ) ?? [];
 
   async function getMessagesLatest(conversationId = selectedChat?.id) {
     if (!conversationId) return;
 
     const res = await api.get(`messages?conversationId=${conversationId}`);
-    setMessages(res.data.data);
+
+    dispatch(
+      setMessages({
+        conversationId,
+        messages: res.data.data,
+      }),
+    );
   }
 
   async function fetchOlderMessages() {
@@ -21,61 +35,51 @@ export default function ChatArea({ selectedChat }) {
 
     const firstMessageId = messages[0].id;
 
-    const params = new URLSearchParams();;
+    const params = new URLSearchParams();
 
-    params.searchParams.append("conversationId", selectedChat.id);
-    params.searchParams.append("beforeMessageId", firstMessageId);
+    params.append("conversationId", selectedChat.id);
+
+    params.append("beforeMessageId", firstMessageId);
 
     const res = await api.get(`messages/before?${params.toString()}`);
+
     const older = res.data.data;
 
     if (older.length) {
-      setMessages((prev) => [...older, ...prev]);
+      dispatch(
+        prependMessages({
+          conversationId: selectedChat.id,
+          messages: older,
+        }),
+      );
     }
 
     return older;
   }
 
-  async function fetchNewMessages() {
-    if (!messages.length) return [];
-
-    const lastMessageId = messages[messages.length - 1].id;
-
-    const params = new URLSearchParams();;
-
-    params.searchParams.append("conversationId", selectedChat.id);
-    params.searchParams.append("afterMessageId", lastMessageId);
-
-    const res = await api.get(`messages/after?${params.toString()}`);
-
-    const newer = res.data.data;
-
-    if (newer.length) {
-      setMessages((prev) => [...prev, ...newer]);
-    }
-
-    return newer;
-  }
-
   const getMessagesLatestEvent = useEffectEvent(getMessagesLatest);
 
   useEffect(() => {
-    getMessagesLatestEvent(selectedChat?.id);
-  }, [selectedChat]);
+    if (!selectedChat) return;
+
+    // Already cached
+    if (messages.length) return;
+
+    getMessagesLatestEvent(selectedChat.id);
+  }, [selectedChat, messages.length]);
 
   const onSend = async ({ text, onSuccess }) => {
     try {
-      const res = await api.post("messages", {
+      await api.post("messages", {
         text,
         conversationId: selectedChat?.id,
       });
-      getMessagesLatest(selectedChat?.id);
+
       onSuccess();
-    }
-    catch (error) {
+    } catch (error) {
       toast.error(error.message);
     }
-  }
+  };
 
   if (!selectedChat) return <EmptyState />;
 
@@ -86,10 +90,10 @@ export default function ChatArea({ selectedChat }) {
       <MessageArea
         messages={messages}
         fetchOlderMessages={fetchOlderMessages}
-        fetchNewMessages={fetchNewMessages}
+        hasMore={true}
       />
 
-      <MessageInput onSend={onSend}/>
+      <MessageInput onSend={onSend} />
     </div>
   );
 }
